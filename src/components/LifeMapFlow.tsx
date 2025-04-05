@@ -181,6 +181,7 @@ const LifeMapFlowInner = () => {
   const onConnect = useCallback(
     (params: Connection) => {
       console.log('onConnect called with params:', params);
+      console.log('Selected color:', selectedColor);
       
       if (!params.source || !params.target) {
         console.error('Invalid connection params:', params);
@@ -195,6 +196,7 @@ const LifeMapFlowInner = () => {
         targetHandle: params.targetHandle || null,
         type: 'default',
         animated: false,
+        data: { color: selectedColor },
         style: { 
           stroke: selectedColor,
           strokeWidth: 2,
@@ -205,7 +207,7 @@ const LifeMapFlowInner = () => {
         },
       };
 
-      console.log('Creating new edge:', newEdge);
+      console.log('Creating new edge with color:', newEdge);
       setEdges((eds) => addEdge(newEdge, eds));
     },
     [setEdges, selectedColor]

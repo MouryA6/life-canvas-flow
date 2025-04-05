@@ -1,5 +1,5 @@
 import React from 'react';
-import { EdgeProps, BaseEdge, getStraightPath, MarkerType } from '@xyflow/react';
+import { EdgeProps, getStraightPath } from '@xyflow/react';
 
 const CustomEdge: React.FC<EdgeProps> = ({
   id,
@@ -12,31 +12,38 @@ const CustomEdge: React.FC<EdgeProps> = ({
   sourcePosition,
   targetPosition,
   style = {},
+  data,
   markerEnd,
   ...props
 }) => {
-  const [edgePath, labelX, labelY] = getStraightPath({
+  const [edgePath] = getStraightPath({
     sourceX,
     sourceY,
     targetX,
     targetY,
   });
 
+  // Extract color from multiple possible sources
+  const color = data?.color || style?.stroke || '#00FFFF';
+  
+  console.log('CustomEdge rendering with color:', color, 'Data:', data, 'Style:', style);
+
+  // Render the edge with very explicit styling
   return (
-    <BaseEdge
-      id={id}
-      path={edgePath}
-      markerEnd={markerEnd}
-      style={{
-        ...style,
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        cursor: 'pointer',
-      }}
-      labelX={labelX}
-      labelY={labelY}
-      {...props}
-    />
+    <>
+      <path
+        id={id}
+        className="react-flow__edge-path"
+        d={edgePath}
+        style={{
+          stroke: `${color} !important`,
+          strokeWidth: style?.strokeWidth || 2,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+        }}
+        markerEnd={markerEnd}
+      />
+    </>
   );
 };
 

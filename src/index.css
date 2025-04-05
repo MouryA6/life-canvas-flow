@@ -108,57 +108,17 @@
   z-index: 100;
 }
 
-.life-map-flow .react-flow__edge path {
-  stroke-width: 2;
-  transition: stroke-width 0.2s, stroke 0.2s;
-}
-
-.life-map-flow .react-flow__edge:hover path {
-  stroke-width: 3;
-}
-
-.life-map-flow .react-flow__edge.selected path {
-  stroke-width: 3;
-}
-
-.life-map-flow .react-flow__connection {
-  pointer-events: none;
-}
-
-.life-map-flow .react-flow__connection path {
-  stroke-width: 2;
-}
-
 .life-map-flow .react-flow__edge-path {
   stroke-width: 2;
   cursor: pointer;
 }
 
-.life-map-flow .react-flow__edge:hover .react-flow__edge-path {
-  stroke-width: 3;
-}
-
 .life-map-flow .react-flow__edge.selected .react-flow__edge-path {
-  stroke-width: 3;
+  stroke-width: 3 !important;
 }
 
-.life-map-flow .react-flow__edge-path {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.life-map-flow .react-flow__edge-text {
-  font-size: 12px;
-}
-
-.life-map-flow .react-flow__edge-textbg {
-  fill: rgba(0, 0, 0, 0.5);
-}
-
-.life-map-flow .react-flow__node {
-  box-shadow: none;
-  border-radius: 0;
-  z-index: 2;
+.life-map-flow .react-flow__connection-path {
+  stroke-width: 2;
 }
 
 .life-map-flow .react-flow__handle {
@@ -174,8 +134,26 @@
   transform: scale(1.2);
 }
 
-.life-map-flow .react-flow__handle.connecting {
-  opacity: 1;
+.life-map-flow .react-flow__connection {
+  pointer-events: none;
+}
+
+.life-map-flow .react-flow__connection path {
+  stroke-width: 2;
+}
+
+.life-map-flow .react-flow__edge-text {
+  font-size: 12px;
+}
+
+.life-map-flow .react-flow__edge-textbg {
+  fill: rgba(0, 0, 0, 0.5);
+}
+
+.life-map-flow .react-flow__node {
+  box-shadow: none;
+  border-radius: 0;
+  z-index: 2;
 }
 
 .life-map-flow .react-flow__handle:hover {
@@ -235,9 +213,10 @@
 }
 
 .react-flow__edge-path {
-  stroke: currentColor !important;
   stroke-width: 2 !important;
   stroke-opacity: 1 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
@@ -281,7 +260,7 @@
   z-index: 1000;
 }
 
-.react-flow__connection-path {
+.react-flow__connection path {
   stroke: currentColor;
   stroke-width: 2;
   stroke-opacity: 0.8;
