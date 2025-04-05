@@ -24,6 +24,10 @@ import RectangleNode from './nodes/RectangleNode';
 import CircleNode from './nodes/CircleNode';
 import CloudNode from './nodes/CloudNode';
 import Toolbar from './Toolbar';
+import AuthModal from './auth/AuthModal';
+import SaveProjectDialog from './projects/SaveProjectDialog';
+import { Project } from '@/services/projectService';
+import { useAuth } from '@/context/AuthContext';
 
 // Properly define the node types
 const nodeTypes: NodeTypes = {
@@ -49,7 +53,15 @@ const LifeMapFlow = () => {
   const [selectedTool, setSelectedTool] = useState('select');
   const [selectedColor, setSelectedColor] = useState('#00FF00');
   const [nextNodeId, setNextNodeId] = useState(2);
-  const { zoomIn, zoomOut, setViewport, getViewport, toObject } = useReactFlow();
+  const { zoomIn, zoomOut, setViewport, getViewport } = useReactFlow();
+  
+  // Auth and project states
+  const { user } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [authModalMessage, setAuthModalMessage] = useState('');
+  const [currentProject, setCurrentProject] = useState<{id?: string, name?: string}>({});
+  const [shareIntent, setShareIntent] = useState(false);
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -136,15 +148,57 @@ const LifeMapFlow = () => {
   }, [setNodes, setEdges]);
 
   const handleSave = useCallback(() => {
-    const flow = toObject();
+    // First save to localStorage as a backup
+    const flow = { nodes, edges };
     localStorage.setItem('lifemap-flow', JSON.stringify(flow));
-    toast.success('Map saved successfully!');
-  }, [toObject]);
+
+    // If user not logged in, show auth modal
+    if (!user) {
+      setAuthModalMessage('Sign in to save your Life Map to the cloud');
+      setAuthModalOpen(true);
+    } else {
+      // Show save dialog
+      setSaveDialogOpen(true);
+    }
+  }, [nodes, edges, user]);
+
+  const handleShare = useCallback(() => {
+    if (!user) {
+      setShareIntent(true);
+      setAuthModalMessage('Sign in to share your Life Map with others');
+      setAuthModalOpen(true);
+    } else {
+      toast.info('Sharing functionality coming soon');
+    }
+  }, [user]);
 
   const handleExport = useCallback(() => {
     // This is a placeholder. In a real app, you would implement actual export functionality
     toast.info('Export functionality would save an image of your mind map');
   }, []);
+
+  const handleLoadProject = useCallback((project: Project) => {
+    try {
+      const { nodes, edges } = project.project_data;
+      setNodes(nodes);
+      setEdges(edges);
+      setCurrentProject({ 
+        id: project.id, 
+        name: project.project_name 
+      });
+      
+      // Find highest node ID to continue from there
+      if (nodes && nodes.length > 0) {
+        const ids = nodes.map((node: any) => parseInt(node.id)).filter((id: any) => !isNaN(id));
+        if (ids.length > 0) {
+          setNextNodeId(Math.max(...ids) + 1);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load project:', error);
+      toast.error('Failed to load the selected project');
+    }
+  }, [setNodes, setEdges]);
 
   // Define getMiniMapNodeColor as a function that returns a string
   const getMiniMapNodeColor: GetMiniMapNodeAttribute = (node) => {
@@ -191,13 +245,38 @@ const LifeMapFlow = () => {
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onSave={handleSave}
-          onExport={handleExport}
+          onShare={handleShare}
+          onLoadProject={handleLoadProject}
           selectedTool={selectedTool}
           setSelectedTool={setSelectedTool}
           selectedColor={selectedColor}
           setSelectedColor={setSelectedColor}
         />
       </ReactFlow>
+      
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => {
+          setAuthModalOpen(false);
+          if (shareIntent) {
+            setShareIntent(false);
+          } else {
+            setSaveDialogOpen(true); // Show save dialog after successful login
+          }
+        }}
+        message={authModalMessage}
+      />
+      
+      {/* Save Project Dialog */}
+      <SaveProjectDialog
+        isOpen={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        nodes={nodes}
+        edges={edges}
+        currentProjectId={currentProject.id}
+        currentProjectName={currentProject.name}
+      />
     </div>
   );
 };
