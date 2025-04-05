@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
@@ -17,6 +16,14 @@ import {
   Node,
   SelectionMode,
   GetMiniMapNodeAttribute,
+  ConnectionMode,
+  MarkerType,
+  Position,
+  EdgeTypes,
+  BaseEdge,
+  getStraightPath,
+  getBezierPath,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import { toast } from 'sonner';
 
@@ -24,16 +31,22 @@ import RectangleNode from './nodes/RectangleNode';
 import CircleNode from './nodes/CircleNode';
 import CloudNode from './nodes/CloudNode';
 import Toolbar from './Toolbar';
+import Legend from './Legend';
 import AuthModal from './auth/AuthModal';
 import SaveProjectDialog from './projects/SaveProjectDialog';
 import { Project } from '@/services/projectService';
 import { useAuth } from '@/context/AuthContext';
+import { getConnectionPoints } from '@/utils/connectionUtils';
 
 // Properly define the node types
 const nodeTypes: NodeTypes = {
   rectangle: RectangleNode,
   circle: CircleNode,
   cloud: CloudNode,
+};
+
+const edgeTypes: EdgeTypes = {
+  default: BaseEdge,
 };
 
 const initialNodes = [
@@ -46,10 +59,10 @@ const initialNodes = [
   },
 ];
 
-const LifeMapFlow = () => {
+const LifeMapFlowInner = () => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges, _onEdgesChange] = useEdgesState([]);
   const [selectedTool, setSelectedTool] = useState('select');
   const [selectedColor, setSelectedColor] = useState('#00FF00');
   const [nextNodeId, setNextNodeId] = useState(2);
@@ -62,6 +75,16 @@ const LifeMapFlow = () => {
   const [authModalMessage, setAuthModalMessage] = useState('');
   const [currentProject, setCurrentProject] = useState<{id?: string, name?: string}>({});
   const [shareIntent, setShareIntent] = useState(false);
+
+  // Enhanced onEdgesChange with error handling
+  const onEdgesChange = useCallback((changes: any) => {
+    try {
+      console.log('Edge changes:', changes);
+      _onEdgesChange(changes);
+    } catch (error) {
+      console.error('Error updating edges:', error);
+    }
+  }, [_onEdgesChange]);
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -86,14 +109,40 @@ const LifeMapFlow = () => {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      setEdges((eds) => addEdge({ 
-        ...params, 
+      console.log('onConnect called with params:', params);
+      
+      if (!params.source || !params.target) {
+        console.error('Invalid connection params:', params);
+        return;
+      }
+
+      const edge = {
+        ...params,
+        id: `e${params.source}-${params.target}-${Date.now()}`,
+        type: 'default',
         animated: false,
-        style: { stroke: selectedColor },
-      }, eds));
+        data: { color: selectedColor },
+        style: { 
+          stroke: selectedColor,
+          strokeWidth: 2,
+        },
+      };
+
+      console.log('Creating new edge:', edge);
+      setEdges((eds) => {
+        const newEdges = addEdge(edge, eds);
+        console.log('Updated edges:', newEdges);
+        return newEdges;
+      });
     },
     [setEdges, selectedColor]
   );
+
+  // Add logging for nodes and edges on render
+  useEffect(() => {
+    console.log('Current nodes:', nodes);
+    console.log('Current edges:', edges);
+  }, [nodes, edges]);
 
   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: any) => {
@@ -219,65 +268,77 @@ const LifeMapFlow = () => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodeDoubleClick={onNodeDoubleClick}
         className="life-map-flow"
-        panOnScroll={selectedTool === 'pan'}
-        panOnDrag={selectedTool === 'pan'}
-        selectionOnDrag={selectedTool === 'select'}
-        selectionMode={selectedTool === 'select' ? SelectionMode.Full : SelectionMode.Partial}
-        proOptions={{ hideAttribution: true }}
+        fitView
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        minZoom={0.1}
+        maxZoom={4}
+        defaultEdgeOptions={{
+          type: 'default',
+          style: { strokeWidth: 2 },
+        }}
+        connectionMode={ConnectionMode.Loose}
+        onError={(error) => {
+          console.error('ReactFlow error:', error);
+          toast.error('An error occurred. Please try again.');
+        }}
+        snapToGrid={false}
+        elevateEdgesOnSelect={true}
+        selectNodesOnDrag={false}
+        panOnScroll={true}
+        panOnDrag={true}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        zoomOnDoubleClick={false}
       >
-        <Background 
-          variant={BackgroundVariant.Dots} 
-          gap={24} 
-          color="rgba(255, 255, 255, 0.1)"
-        />
-        <Controls showInteractive={false} />
+        <Background variant={BackgroundVariant.Dots} />
+        <Controls />
         <MiniMap 
           nodeColor={getMiniMapNodeColor}
-          maskColor="rgba(0, 0, 0, 0.6)"
           nodeStrokeColor={getMiniMapNodeStrokeColor}
-          nodeStrokeWidth={2}
+          maskColor="rgb(0, 0, 0, 0.3)"
         />
-        <Toolbar 
-          addNode={addNode}
-          onDelete={handleDeleteSelected}
-          onZoomIn={zoomIn}
-          onZoomOut={zoomOut}
-          onSave={handleSave}
-          onShare={handleShare}
-          onLoadProject={handleLoadProject}
-          selectedTool={selectedTool}
-          setSelectedTool={setSelectedTool}
-          selectedColor={selectedColor}
-          setSelectedColor={setSelectedColor}
-        />
+        <Panel position="top-left">
+          <Toolbar
+            selectedTool={selectedTool}
+            setSelectedTool={setSelectedTool}
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
+            onAddNode={addNode}
+            onDelete={handleDeleteSelected}
+            onSave={handleSave}
+            onShare={handleShare}
+            onExport={handleExport}
+          />
+        </Panel>
       </ReactFlow>
-      
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => {
-          setAuthModalOpen(false);
-          if (shareIntent) {
-            setShareIntent(false);
-          } else {
-            setSaveDialogOpen(true); // Show save dialog after successful login
-          }
-        }}
+      <Legend />
+      <AuthModal 
+        isOpen={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)}
         message={authModalMessage}
+        shareIntent={shareIntent}
+        setShareIntent={setShareIntent}
       />
-      
-      {/* Save Project Dialog */}
       <SaveProjectDialog
         isOpen={saveDialogOpen}
         onClose={() => setSaveDialogOpen(false)}
-        nodes={nodes}
-        edges={edges}
-        currentProjectId={currentProject.id}
-        currentProjectName={currentProject.name}
+        currentProject={currentProject}
+        flow={{ nodes, edges }}
+        onLoadProject={handleLoadProject}
       />
     </div>
+  );
+};
+
+// Wrap the component with ReactFlowProvider
+const LifeMapFlow = () => {
+  return (
+    <ReactFlowProvider>
+      <LifeMapFlowInner />
+    </ReactFlowProvider>
   );
 };
 

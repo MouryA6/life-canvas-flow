@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,31 +26,27 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type ToolbarProps = {
-  addNode: (type: string) => void;
-  onDelete: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onSave: () => void;
-  onShare: () => void;
-  onLoadProject: (project: any) => void; 
   selectedTool: string;
   setSelectedTool: (tool: string) => void;
   selectedColor: string;
   setSelectedColor: (color: string) => void;
+  onAddNode: (type: string) => void;
+  onDelete: () => void;
+  onSave: () => void;
+  onShare: () => void;
+  onExport: () => void;
 };
 
 const Toolbar: React.FC<ToolbarProps> = ({
-  addNode,
-  onDelete,
-  onZoomIn,
-  onZoomOut,
-  onSave,
-  onShare,
-  onLoadProject,
   selectedTool,
   setSelectedTool,
   selectedColor,
   setSelectedColor,
+  onAddNode,
+  onDelete,
+  onSave,
+  onShare,
+  onExport,
 }) => {
   const colors = [
     { name: 'green', value: '#00FF00' },
@@ -109,7 +104,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => addNode('rectangle')}
+        onClick={() => onAddNode('rectangle')}
         title="Add Rectangle"
         className="bg-black text-white hover:bg-black/80"
       >
@@ -119,7 +114,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => addNode('circle')}
+        onClick={() => onAddNode('circle')}
         title="Add Circle"
         className="bg-black text-white hover:bg-black/80"
       >
@@ -129,7 +124,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => addNode('cloud')}
+        onClick={() => onAddNode('cloud')}
         title="Add Cloud"
         className="bg-black text-white hover:bg-black/80"
       >
@@ -155,28 +150,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        onClick={onZoomIn}
-        title="Zoom In"
-        className="bg-black text-white hover:bg-black/80"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onZoomOut}
-        title="Zoom Out"
-        className="bg-black text-white hover:bg-black/80"
-      >
-        <Minus className="h-4 w-4" />
-      </Button>
-      
-      <div className="border-r border-white/20 h-8 mx-2" />
-      
-      <Button
-        variant="ghost"
-        size="icon"
         onClick={onDelete}
         title="Delete Selected"
         className="bg-black text-white hover:bg-black/80"
@@ -186,7 +159,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
       
       <div className="border-r border-white/20 h-8 mx-2" />
       
-      {/* Project management buttons */}
       <Button
         variant="ghost"
         size="icon"
@@ -197,8 +169,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Save className="h-4 w-4" />
       </Button>
       
-      <ProjectDrawer onLoadProject={onLoadProject} />
-      
       <Button
         variant="ghost"
         size="icon"
@@ -207,6 +177,16 @@ const Toolbar: React.FC<ToolbarProps> = ({
         className="bg-black text-white hover:bg-black/80"
       >
         <Share2 className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onExport}
+        title="Export"
+        className="bg-black text-white hover:bg-black/80"
+      >
+        <Download className="h-4 w-4" />
       </Button>
       
       {/* Spacer to push user menu to the right */}
