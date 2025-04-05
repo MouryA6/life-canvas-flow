@@ -147,12 +147,12 @@ const LifeMapFlow = () => {
   }, []);
 
   // Define getMiniMapNodeColor as a function that returns a string
-  const getMiniMapNodeColor: GetMiniMapNodeAttribute<Node> = (node) => {
+  const getMiniMapNodeColor: GetMiniMapNodeAttribute = (node) => {
     return node.data?.color || '#00FF00';
   };
 
   // Define getMiniMapNodeStrokeColor as a function that returns a string
-  const getMiniMapNodeStrokeColor: GetMiniMapNodeAttribute<Node> = (node) => {
+  const getMiniMapNodeStrokeColor: GetMiniMapNodeAttribute = (node) => {
     return node.data?.color || '#00FF00';
   };
 

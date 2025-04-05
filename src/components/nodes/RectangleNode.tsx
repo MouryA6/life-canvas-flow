@@ -2,14 +2,14 @@
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import React, { useState } from 'react';
 
-// Define correct interface for the node data
+// Define interface for the node data
 interface RectangleNodeData {
   label: string;
   color?: string;
   onTextChange?: (text: string) => void;
 }
 
-// Use correct generic type syntax for NodeProps
+// Use the generic NodeProps from ReactFlow and pass our custom data type
 const RectangleNode = ({ data, isConnectable, selected }: NodeProps<RectangleNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(data?.label || 'New Node');
