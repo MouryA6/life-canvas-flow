@@ -463,3 +463,38 @@
 .react-flow__node.selected {
   cursor: grabbing;
 }
+
+/* Edge styles */
+.custom-edge-path {
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+/* Override any other styles that might be interfering */
+.react-flow__edge-path {
+  stroke: inherit !important;
+}
+
+/* Handle styles */
+.life-map-flow .react-flow__handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: white !important;
+  border: 2px solid currentColor !important;
+  border-radius: 50% !important;
+  z-index: 500;
+}
+
+.life-map-flow .react-flow__handle:hover {
+  transform: scale(1.2);
+}
+
+/* Connection styles */
+.react-flow__connection {
+  z-index: 1000;
+}
+
+.react-flow__connection-path {
+  stroke-width: 2;
+  fill: none;
+}

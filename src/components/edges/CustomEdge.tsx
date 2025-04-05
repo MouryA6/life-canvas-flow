@@ -9,11 +9,8 @@ const CustomEdge: React.FC<EdgeProps> = ({
   sourceY,
   targetX,
   targetY,
-  sourcePosition,
-  targetPosition,
-  style = {},
   data,
-  markerEnd,
+  style = {},
   ...props
 }) => {
   const [edgePath] = getStraightPath({
@@ -23,27 +20,23 @@ const CustomEdge: React.FC<EdgeProps> = ({
     targetY,
   });
 
-  // Extract color from multiple possible sources
-  const color = data?.color || style?.stroke || '#00FFFF';
-  
-  console.log('CustomEdge rendering with color:', color, 'Data:', data, 'Style:', style);
+  const color = (data?.color || style?.stroke || '#4CAF50') as string;
+  console.log('CustomEdge rendering with color:', color);
 
-  // Render the edge with very explicit styling
+  // IMPORTANT: Return direct SVG instead of using BaseEdge
   return (
-    <>
-      <path
-        id={id}
-        className="react-flow__edge-path"
-        d={edgePath}
-        style={{
-          stroke: `${color} !important`,
-          strokeWidth: style?.strokeWidth || 2,
-          strokeLinecap: 'round',
-          strokeLinejoin: 'round',
-        }}
-        markerEnd={markerEnd}
-      />
-    </>
+    <path
+      id={id}
+      d={edgePath}
+      stroke={color}
+      strokeWidth={2}
+      fill="none"
+      className="custom-edge-path"
+      style={{
+        stroke: color as string,
+        strokeWidth: 2,
+      }}
+    />
   );
 };
 
