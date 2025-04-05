@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,6 +25,17 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				canvas: {
+					background: '#121212',
+					grid: '#1a1a1a',
+				},
+				node: {
+					green: '#00FF00',
+					blue: '#00FFFF',
+					pink: '#FF00FF',
+					yellow: '#FFFF00',
+					red: '#FF0000',
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -89,7 +101,10 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+			},
+			fontFamily: {
+				handwritten: ['Caveat', 'cursive'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
