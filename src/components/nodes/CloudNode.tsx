@@ -2,7 +2,13 @@
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import React, { useState } from 'react';
 
-const CloudNode = ({ data, isConnectable, selected }: NodeProps) => {
+interface CloudNodeData {
+  label: string;
+  color?: string;
+  onTextChange?: (text: string) => void;
+}
+
+const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(data.label || 'New Node');
 
@@ -28,10 +34,6 @@ const CloudNode = ({ data, isConnectable, selected }: NodeProps) => {
 
   // SVG path for cloud shape
   const cloudPath = "M 25,60 C 25,45 15,30 28,30 C 30,5 70,5 80,20 C 85,10 105,10 108,30 C 115,30 125,45 110,60 C 110,60 25,60 25,60 z";
-
-  const borderStyle = selected 
-    ? 'border-[3px]' 
-    : 'border-[2px]';
 
   return (
     <div 

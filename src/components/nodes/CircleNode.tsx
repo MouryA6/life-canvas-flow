@@ -2,7 +2,13 @@
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import React, { useState } from 'react';
 
-const CircleNode = ({ data, isConnectable, selected }: NodeProps) => {
+interface CircleNodeData {
+  label: string;
+  color?: string;
+  onTextChange?: (text: string) => void;
+}
+
+const CircleNode = ({ data, isConnectable, selected }: NodeProps<CircleNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(data.label || 'New Node');
 

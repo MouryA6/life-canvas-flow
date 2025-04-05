@@ -2,7 +2,13 @@
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import React, { useState } from 'react';
 
-const RectangleNode = ({ data, isConnectable, selected }: NodeProps) => {
+interface RectangleNodeData {
+  label: string;
+  color?: string;
+  onTextChange?: (text: string) => void;
+}
+
+const RectangleNode = ({ data, isConnectable, selected }: NodeProps<RectangleNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(data.label || 'New Node');
 

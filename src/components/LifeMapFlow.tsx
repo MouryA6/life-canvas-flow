@@ -14,6 +14,8 @@ import {
   Panel,
   NodeTypes,
   BackgroundVariant,
+  Node,
+  SelectionMode as ReactFlowSelectionMode,
 } from '@xyflow/react';
 import { toast } from 'sonner';
 
@@ -45,7 +47,7 @@ const LifeMapFlow = () => {
   const [selectedTool, setSelectedTool] = useState('select');
   const [selectedColor, setSelectedColor] = useState('#00FF00');
   const [nextNodeId, setNextNodeId] = useState(2);
-  const { project, zoomIn, zoomOut, setViewport, getViewport, toObject } = useReactFlow();
+  const { zoomIn, zoomOut, setViewport, getViewport, toObject } = useReactFlow();
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -156,7 +158,7 @@ const LifeMapFlow = () => {
         panOnScroll={selectedTool === 'pan'}
         panOnDrag={selectedTool === 'pan'}
         selectionOnDrag={selectedTool === 'select'}
-        selectionMode={selectedTool === 'select' ? 'full' : 'partial'}
+        selectionMode={selectedTool === 'select' ? ReactFlowSelectionMode.Full : ReactFlowSelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
       >
         <Background 
@@ -167,10 +169,10 @@ const LifeMapFlow = () => {
         <Controls showInteractive={false} />
         <MiniMap 
           nodeColor={(node) => {
-            return node.data.color || '#00FF00';
+            return node.data?.color || '#00FF00';
           }}
           maskColor="rgba(0, 0, 0, 0.6)"
-          nodeStrokeColor={node => node.data.color || '#00FF00'}
+          nodeStrokeColor={(node) => node.data?.color || '#00FF00'}
           nodeStrokeWidth={2}
         />
         <Toolbar 
