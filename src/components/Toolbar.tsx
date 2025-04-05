@@ -68,6 +68,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
     return user.email.substring(0, 2).toUpperCase();
   };
 
+  // Helper function to determine button styling based on selection
+  const getButtonStyle = (tool: string) => {
+    if (selectedTool === tool) {
+      return "bg-white text-black hover:bg-white/90 hover:text-black";
+    }
+    return "bg-black text-white hover:bg-black/80";
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 p-2 bg-black bg-opacity-75 flex items-center gap-2 z-10">
       <div className="mr-4">
@@ -77,19 +85,21 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <div className="border-r border-white/20 h-8 mx-2" />
       
       <Button
-        variant={selectedTool === 'select' ? "secondary" : "ghost"}
+        variant="ghost"
         size="icon"
         onClick={() => setSelectedTool('select')}
         title="Select"
+        className={getButtonStyle('select')}
       >
         <MousePointer className="h-4 w-4" />
       </Button>
       
       <Button
-        variant={selectedTool === 'pan' ? "secondary" : "ghost"}
+        variant="ghost"
         size="icon"
         onClick={() => setSelectedTool('pan')}
         title="Pan"
+        className={getButtonStyle('pan')}
       >
         <Hand className="h-4 w-4" />
       </Button>
@@ -101,6 +111,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={() => addNode('rectangle')}
         title="Add Rectangle"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Square className="h-4 w-4" />
       </Button>
@@ -110,6 +121,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={() => addNode('circle')}
         title="Add Circle"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Circle className="h-4 w-4" />
       </Button>
@@ -119,6 +131,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={() => addNode('cloud')}
         title="Add Cloud"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Cloud className="h-4 w-4" />
       </Button>
@@ -144,6 +157,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={onZoomIn}
         title="Zoom In"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Plus className="h-4 w-4" />
       </Button>
@@ -153,6 +167,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={onZoomOut}
         title="Zoom Out"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Minus className="h-4 w-4" />
       </Button>
@@ -164,6 +179,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={onDelete}
         title="Delete Selected"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Trash2 className="h-4 w-4" />
       </Button>
@@ -176,6 +192,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={onSave}
         title="Save"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Save className="h-4 w-4" />
       </Button>
@@ -187,6 +204,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         size="icon"
         onClick={onShare}
         title="Share"
+        className="bg-black text-white hover:bg-black/80"
       >
         <Share2 className="h-4 w-4" />
       </Button>
@@ -216,7 +234,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={onSave}>
+        <Button variant="ghost" size="sm" className="h-8 gap-1 text-white" onClick={onSave}>
           <User className="h-4 w-4" />
           <span>Sign In</span>
         </Button>

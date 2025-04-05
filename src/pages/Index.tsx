@@ -3,6 +3,7 @@ import React from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import LifeMapFlow from '@/components/LifeMapFlow';
 import '@xyflow/react/dist/style.css';
+import { Toaster } from 'sonner';
 
 const Index = () => {
   return (
@@ -10,6 +11,7 @@ const Index = () => {
       <ReactFlowProvider>
         <LifeMapFlow />
       </ReactFlowProvider>
+      <Toaster position="top-right" />
     </div>
   );
 };
