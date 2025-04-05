@@ -15,7 +15,8 @@ import {
   NodeTypes,
   BackgroundVariant,
   Node,
-  SelectionMode as ReactFlowSelectionMode,
+  SelectionMode,
+  GetMiniMapNodeAttribute,
 } from '@xyflow/react';
 import { toast } from 'sonner';
 
@@ -24,6 +25,7 @@ import CircleNode from './nodes/CircleNode';
 import CloudNode from './nodes/CloudNode';
 import Toolbar from './Toolbar';
 
+// Properly define the node types
 const nodeTypes: NodeTypes = {
   rectangle: RectangleNode,
   circle: CircleNode,
@@ -144,6 +146,16 @@ const LifeMapFlow = () => {
     toast.info('Export functionality would save an image of your mind map');
   }, []);
 
+  // Define getMiniMapNodeColor as a function that returns a string
+  const getMiniMapNodeColor: GetMiniMapNodeAttribute<Node> = (node) => {
+    return node.data?.color || '#00FF00';
+  };
+
+  // Define getMiniMapNodeStrokeColor as a function that returns a string
+  const getMiniMapNodeStrokeColor: GetMiniMapNodeAttribute<Node> = (node) => {
+    return node.data?.color || '#00FF00';
+  };
+
   return (
     <div className="canvas-wrapper" ref={reactFlowWrapper}>
       <ReactFlow
@@ -158,7 +170,7 @@ const LifeMapFlow = () => {
         panOnScroll={selectedTool === 'pan'}
         panOnDrag={selectedTool === 'pan'}
         selectionOnDrag={selectedTool === 'select'}
-        selectionMode={selectedTool === 'select' ? ReactFlowSelectionMode.Full : ReactFlowSelectionMode.Partial}
+        selectionMode={selectedTool === 'select' ? SelectionMode.Full : SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
       >
         <Background 
@@ -168,11 +180,9 @@ const LifeMapFlow = () => {
         />
         <Controls showInteractive={false} />
         <MiniMap 
-          nodeColor={(node) => {
-            return node.data?.color || '#00FF00';
-          }}
+          nodeColor={getMiniMapNodeColor}
           maskColor="rgba(0, 0, 0, 0.6)"
-          nodeStrokeColor={(node) => node.data?.color || '#00FF00'}
+          nodeStrokeColor={getMiniMapNodeStrokeColor}
           nodeStrokeWidth={2}
         />
         <Toolbar 

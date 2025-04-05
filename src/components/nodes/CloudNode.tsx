@@ -2,15 +2,17 @@
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import React, { useState } from 'react';
 
+// Define correct interface for the node data
 interface CloudNodeData {
   label: string;
   color?: string;
   onTextChange?: (text: string) => void;
 }
 
+// Use correct generic type syntax for NodeProps
 const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [text, setText] = useState(data.label || 'New Node');
+  const [text, setText] = useState(data?.label || 'New Node');
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -18,7 +20,7 @@ const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) 
 
   const handleBlur = () => {
     setIsEditing(false);
-    if (data.onTextChange) {
+    if (data?.onTextChange) {
       data.onTextChange(text);
     }
   };
@@ -26,7 +28,7 @@ const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       setIsEditing(false);
-      if (data.onTextChange) {
+      if (data?.onTextChange) {
         data.onTextChange(text);
       }
     }
@@ -44,13 +46,13 @@ const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) 
       <Handle
         type="target"
         position={Position.Top}
-        style={{ background: data.color || '#00FF00' }}
+        style={{ background: data?.color || '#00FF00' }}
         isConnectable={isConnectable}
       />
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: data.color || '#00FF00' }}
+        style={{ background: data?.color || '#00FF00' }}
         isConnectable={isConnectable}
       />
       
@@ -63,7 +65,7 @@ const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) 
         <path 
           d={cloudPath} 
           fill="transparent" 
-          stroke={data.color || '#00FF00'} 
+          stroke={data?.color || '#00FF00'} 
           strokeWidth={selected ? 3 : 2} 
         />
       </svg>
@@ -86,13 +88,13 @@ const CloudNode = ({ data, isConnectable, selected }: NodeProps<CloudNodeData>) 
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: data.color || '#00FF00' }}
+        style={{ background: data?.color || '#00FF00' }}
         isConnectable={isConnectable}
       />
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: data.color || '#00FF00' }}
+        style={{ background: data?.color || '#00FF00' }}
         isConnectable={isConnectable}
       />
     </div>
