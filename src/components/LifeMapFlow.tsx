@@ -1,31 +1,35 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import {
+import React, { useCallback, useRef, useState, useEffect } from 'react';
+import { 
   ReactFlow,
-  MiniMap,
-  Controls,
   Background,
+  Controls,
+  MiniMap,
+  Node,
+  Edge,
   useNodesState,
   useEdgesState,
-  addEdge,
+  ReactFlowProvider,
+  NodeChange,
+  EdgeChange,
   Connection,
-  Edge,
+  MarkerType,
+  ConnectionMode,
+  NodeTypes,
+  EdgeTypes,
+  addEdge,
   useReactFlow,
   Panel,
-  NodeTypes,
   BackgroundVariant,
-  Node,
   SelectionMode,
   GetMiniMapNodeAttribute,
-  ConnectionMode,
-  MarkerType,
   Position,
-  EdgeTypes,
   BaseEdge,
   getStraightPath,
   getBezierPath,
-  ReactFlowProvider,
+  ConnectionLineType,
 } from '@xyflow/react';
 import { toast } from 'sonner';
+import CustomEdge from './edges/CustomEdge';
 
 import RectangleNode from './nodes/RectangleNode';
 import CircleNode from './nodes/CircleNode';
@@ -46,25 +50,62 @@ const nodeTypes: NodeTypes = {
 };
 
 const edgeTypes: EdgeTypes = {
-  default: BaseEdge,
+  default: CustomEdge,
 };
 
-const initialNodes = [
+export interface CustomNode extends Node {
+  type: string;
+  data: {
+    label: string;
+    color: string;
+  };
+  position: {
+    x: number;
+    y: number;
+  };
+  style: {
+    width: number;
+    height: number;
+  };
+}
+
+export interface CustomEdge extends Edge {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  animated: boolean;
+  style: {
+    stroke: string;
+    strokeWidth: number;
+  };
+  markerEnd: {
+    type: MarkerType;
+    color: string;
+  };
+}
+
+const initialNodes: CustomNode[] = [
   {
     id: '1',
     type: 'circle',
-    data: { label: 'Me', color: '#00FF00' },
+    data: { label: 'Me', color: '#4CAF50' },
     position: { x: 400, y: 200 },
     style: { width: 100, height: 100 },
   },
 ];
 
+interface FlowState {
+  nodes: CustomNode[];
+  edges: CustomEdge[];
+}
+
 const LifeMapFlowInner = () => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, _onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode>(initialNodes);
+  const [edges, setEdges, _onEdgesChange] = useEdgesState<CustomEdge>([]);
   const [selectedTool, setSelectedTool] = useState('select');
-  const [selectedColor, setSelectedColor] = useState('#00FF00');
+  const [selectedColor, setSelectedColor] = useState('#4CAF50');
   const [nextNodeId, setNextNodeId] = useState(2);
   const { zoomIn, zoomOut, setViewport, getViewport } = useReactFlow();
   
@@ -75,9 +116,8 @@ const LifeMapFlowInner = () => {
   const [authModalMessage, setAuthModalMessage] = useState('');
   const [currentProject, setCurrentProject] = useState<{id?: string, name?: string}>({});
   const [shareIntent, setShareIntent] = useState(false);
-
   // Enhanced onEdgesChange with error handling
-  const onEdgesChange = useCallback((changes: any) => {
+  const onEdgesChange = useCallback((changes: EdgeChange<CustomEdge>[]) => {
     try {
       console.log('Edge changes:', changes);
       _onEdgesChange(changes);
@@ -86,26 +126,57 @@ const LifeMapFlowInner = () => {
     }
   }, [_onEdgesChange]);
 
+  // Save flow to localStorage
+  const saveToLocalStorage = useCallback((flow: FlowState) => {
+    try {
+      localStorage.setItem('lifemap-flow', JSON.stringify(flow));
+    } catch (error) {
+      console.error('Failed to save flow:', error);
+    }
+  }, []);
+
   // Load saved data from localStorage
   useEffect(() => {
     const savedFlow = localStorage.getItem('lifemap-flow');
     if (savedFlow) {
       try {
-        const flow = JSON.parse(savedFlow);
-        setNodes(flow.nodes || []);
-        setEdges(flow.edges || []);
+        const flow: FlowState = JSON.parse(savedFlow);
+        const typedNodes = flow.nodes?.map(node => ({
+          ...node,
+          type: node.type || 'rectangle',
+        })) as CustomNode[] || initialNodes;
+        
+        const typedEdges = flow.edges?.map(edge => ({
+          ...edge,
+          type: edge.type || 'default',
+          animated: edge.animated || false,
+          style: {
+            stroke: edge.style?.stroke || selectedColor,
+            strokeWidth: edge.style?.strokeWidth || 2,
+          },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: edge.style?.stroke || selectedColor,
+          },
+        })) as CustomEdge[] || [];
+
+        setNodes(typedNodes);
+        setEdges(typedEdges);
+
         // Find highest node ID to continue from there
-        if (flow.nodes && flow.nodes.length > 0) {
-          const ids = flow.nodes.map((node: any) => parseInt(node.id)).filter((id: any) => !isNaN(id));
+        if (typedNodes.length > 0) {
+          const ids = typedNodes
+            .map(node => parseInt(node.id))
+            .filter(id => !isNaN(id));
           if (ids.length > 0) {
             setNextNodeId(Math.max(...ids) + 1);
           }
         }
-      } catch (error) {
-        console.error('Failed to load flow data:', error);
+      } catch (error: unknown) {
+        console.error('Failed to load flow data:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, selectedColor]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -116,24 +187,26 @@ const LifeMapFlowInner = () => {
         return;
       }
 
-      const edge = {
-        ...params,
+      const newEdge: CustomEdge = {
         id: `e${params.source}-${params.target}-${Date.now()}`,
+        source: params.source,
+        target: params.target,
+        sourceHandle: params.sourceHandle || null,
+        targetHandle: params.targetHandle || null,
         type: 'default',
         animated: false,
-        data: { color: selectedColor },
         style: { 
           stroke: selectedColor,
           strokeWidth: 2,
         },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: selectedColor,
+        },
       };
 
-      console.log('Creating new edge:', edge);
-      setEdges((eds) => {
-        const newEdges = addEdge(edge, eds);
-        console.log('Updated edges:', newEdges);
-        return newEdges;
-      });
+      console.log('Creating new edge:', newEdge);
+      setEdges((eds) => addEdge(newEdge, eds));
     },
     [setEdges, selectedColor]
   );
@@ -145,7 +218,7 @@ const LifeMapFlowInner = () => {
   }, [nodes, edges]);
 
   const onNodeDoubleClick = useCallback(
-    (event: React.MouseEvent, node: any) => {
+    (event: React.MouseEvent, node: CustomNode) => {
       // We handle editing in the node components
     },
     []
@@ -199,7 +272,7 @@ const LifeMapFlowInner = () => {
   const handleSave = useCallback(() => {
     // First save to localStorage as a backup
     const flow = { nodes, edges };
-    localStorage.setItem('lifemap-flow', JSON.stringify(flow));
+    saveToLocalStorage(flow);
 
     // If user not logged in, show auth modal
     if (!user) {
@@ -209,7 +282,7 @@ const LifeMapFlowInner = () => {
       // Show save dialog
       setSaveDialogOpen(true);
     }
-  }, [nodes, edges, user]);
+  }, [nodes, edges, user, saveToLocalStorage]);
 
   const handleShare = useCallback(() => {
     if (!user) {
@@ -229,8 +302,8 @@ const LifeMapFlowInner = () => {
   const handleLoadProject = useCallback((project: Project) => {
     try {
       const { nodes, edges } = project.project_data;
-      setNodes(nodes);
-      setEdges(edges);
+      setNodes(nodes as CustomNode[]);
+      setEdges(edges as CustomEdge[]);
       setCurrentProject({ 
         id: project.id, 
         name: project.project_name 
@@ -238,7 +311,9 @@ const LifeMapFlowInner = () => {
       
       // Find highest node ID to continue from there
       if (nodes && nodes.length > 0) {
-        const ids = nodes.map((node: any) => parseInt(node.id)).filter((id: any) => !isNaN(id));
+        const ids = nodes
+          .map(node => parseInt(node.id))
+          .filter((id): id is number => !isNaN(id));
         if (ids.length > 0) {
           setNextNodeId(Math.max(...ids) + 1);
         }
@@ -249,15 +324,13 @@ const LifeMapFlowInner = () => {
     }
   }, [setNodes, setEdges]);
 
-  // Define getMiniMapNodeColor as a function that returns a string
-  const getMiniMapNodeColor: GetMiniMapNodeAttribute = (node) => {
-    return node.data?.color || '#00FF00';
-  };
+  const getNodeColor: GetMiniMapNodeAttribute = useCallback((node: CustomNode) => {
+    return node.data.color;
+  }, []);
 
-  // Define getMiniMapNodeStrokeColor as a function that returns a string
-  const getMiniMapNodeStrokeColor: GetMiniMapNodeAttribute = (node) => {
-    return node.data?.color || '#00FF00';
-  };
+  const getNodeStroke: GetMiniMapNodeAttribute = useCallback((node: CustomNode) => {
+    return node.selected ? '#1a192b' : 'none';
+  }, []);
 
   return (
     <div className="canvas-wrapper" ref={reactFlowWrapper}>
@@ -278,14 +351,22 @@ const LifeMapFlowInner = () => {
         defaultEdgeOptions={{
           type: 'default',
           style: { strokeWidth: 2 },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+          },
         }}
         connectionMode={ConnectionMode.Loose}
+        connectionLineType={ConnectionLineType.Straight}
+        connectionLineStyle={{ stroke: selectedColor, strokeWidth: 2 }}
+        elevateEdgesOnSelect={true}
+        nodesDraggable={true}
+        nodesConnectable={true}
+        elementsSelectable={true}
         onError={(error) => {
           console.error('ReactFlow error:', error);
           toast.error('An error occurred. Please try again.');
         }}
         snapToGrid={false}
-        elevateEdgesOnSelect={true}
         selectNodesOnDrag={false}
         panOnScroll={true}
         panOnDrag={true}
@@ -295,10 +376,10 @@ const LifeMapFlowInner = () => {
       >
         <Background variant={BackgroundVariant.Dots} />
         <Controls />
-        <MiniMap 
-          nodeColor={getMiniMapNodeColor}
-          nodeStrokeColor={getMiniMapNodeStrokeColor}
-          maskColor="rgb(0, 0, 0, 0.3)"
+        <MiniMap
+          nodeColor={getNodeColor}
+          nodeStrokeColor={getNodeStroke}
+          maskColor="rgb(0, 0, 0, 0.1)"
         />
         <Panel position="top-left">
           <Toolbar
@@ -313,8 +394,10 @@ const LifeMapFlowInner = () => {
             onExport={handleExport}
           />
         </Panel>
+        <Panel position="top-right">
+          <Legend />
+        </Panel>
       </ReactFlow>
-      <Legend />
       <AuthModal 
         isOpen={authModalOpen} 
         onClose={() => setAuthModalOpen(false)}
@@ -325,7 +408,7 @@ const LifeMapFlowInner = () => {
       <SaveProjectDialog
         isOpen={saveDialogOpen}
         onClose={() => setSaveDialogOpen(false)}
-        currentProject={currentProject}
+        currentProjectId={currentProject.id}
         flow={{ nodes, edges }}
         onLoadProject={handleLoadProject}
       />

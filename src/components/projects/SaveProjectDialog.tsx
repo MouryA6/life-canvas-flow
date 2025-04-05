@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,25 +7,27 @@ import { ProjectService } from '@/services/projectService';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Node, Edge } from '@xyflow/react';
+import type { CustomNode, CustomEdge } from '../LifeMapFlow';
 
 interface SaveProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  nodes: Node[];
-  edges: Edge[];
   currentProjectId?: string;
-  currentProjectName?: string;
+  flow: {
+    nodes: CustomNode[];
+    edges: CustomEdge[];
+  };
+  onLoadProject: (project: Project) => void;
 }
 
 const SaveProjectDialog: React.FC<SaveProjectDialogProps> = ({
   isOpen,
   onClose,
-  nodes,
-  edges,
   currentProjectId,
-  currentProjectName = '',
+  flow,
+  onLoadProject,
 }) => {
-  const [projectName, setProjectName] = useState(currentProjectName);
+  const [projectName, setProjectName] = useState('');
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
 
@@ -47,8 +48,8 @@ const SaveProjectDialog: React.FC<SaveProjectDialogProps> = ({
       await ProjectService.saveProject(
         user.id,
         projectName,
-        nodes,
-        edges,
+        flow.nodes,
+        flow.edges,
         currentProjectId
       );
       

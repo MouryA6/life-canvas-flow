@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,14 +12,18 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: 'login' | 'signup';
-  message?: string;
+  message: string;
+  shareIntent: boolean;
+  setShareIntent: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ 
   isOpen, 
   onClose, 
   initialTab = 'login',
-  message
+  message,
+  shareIntent,
+  setShareIntent
 }) => {
   const [tab, setTab] = useState<'login' | 'signup'>(initialTab);
   const [email, setEmail] = useState('');

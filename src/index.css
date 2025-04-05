@@ -105,6 +105,7 @@
 
 .life-map-flow .react-flow__edge {
   pointer-events: all;
+  z-index: 100;
 }
 
 .life-map-flow .react-flow__edge path {
@@ -131,7 +132,6 @@
 .life-map-flow .react-flow__edge-path {
   stroke-width: 2;
   cursor: pointer;
-  transition: stroke-width 0.2s ease-in-out;
 }
 
 .life-map-flow .react-flow__edge:hover .react-flow__edge-path {
@@ -162,8 +162,16 @@
 }
 
 .life-map-flow .react-flow__handle {
-  opacity: 0;
-  transition: opacity 0.3s;
+  width: 10px !important;
+  height: 10px !important;
+  background: white !important;
+  border: 2px solid currentColor !important;
+  border-radius: 50% !important;
+  z-index: 500;
+}
+
+.life-map-flow .react-flow__handle:hover {
+  transform: scale(1.2);
 }
 
 .life-map-flow .react-flow__handle.connecting {

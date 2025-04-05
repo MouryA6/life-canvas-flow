@@ -7,46 +7,45 @@ interface NodeHandlesProps {
   shape: 'rectangle' | 'circle' | 'cloud';
 }
 
-const NodeHandles: React.FC<NodeHandlesProps> = ({ color, isConnectable }) => {
+const NodeHandles: React.FC<NodeHandlesProps> = ({ color, isConnectable, shape }) => {
   const handleStyle = {
-    width: '8px',
-    height: '8px',
+    width: '10px',
+    height: '10px',
     background: '#fff',
     border: `2px solid ${color}`,
     borderRadius: '50%',
-    opacity: 1,
+    zIndex: 500,
   };
+
+  const positions = [
+    { id: 'top', position: Position.Top },
+    { id: 'right', position: Position.Right },
+    { id: 'bottom', position: Position.Bottom },
+    { id: 'left', position: Position.Left }
+  ];
 
   return (
     <div className="node-handles">
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        style={handleStyle}
-        isConnectable={isConnectable}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        style={handleStyle}
-        isConnectable={isConnectable}
-      />
-      <Handle
-        type="target"
-        position={Position.Bottom}
-        id="bottom"
-        style={handleStyle}
-        isConnectable={isConnectable}
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        id="left"
-        style={handleStyle}
-        isConnectable={isConnectable}
-      />
+      {positions.map((handle) => (
+        <Handle
+          key={`source-${handle.id}`}
+          type="source"
+          position={handle.position}
+          id={handle.id}
+          style={handleStyle}
+          isConnectable={isConnectable}
+        />
+      ))}
+      {positions.map((handle) => (
+        <Handle
+          key={`target-${handle.id}`}
+          type="target"
+          position={handle.position}
+          id={handle.id}
+          style={handleStyle}
+          isConnectable={isConnectable}
+        />
+      ))}
     </div>
   );
 };
